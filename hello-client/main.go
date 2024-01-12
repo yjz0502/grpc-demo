@@ -9,9 +9,29 @@ import (
 	"log"
 )
 
+type ClientTokenAuth struct {
+}
+
+func (c ClientTokenAuth) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+	return map[string]string{
+		"appID":  "YJZ",
+		"appKey": "123123",
+	}, nil
+}
+
+func (c ClientTokenAuth) RequireTransportSecurity() bool {
+	return false
+}
+
 func main() {
+	//creds, _ := credentials.NewClientTLSFromFile("D:\\GoLandProject\\grpc-demo\\key\\test.pem",
+	//	"*.kuangstudy.com")
 	//链接到server段，此处禁用安全传输，没有加密和验证
-	conn, err := grpc.Dial("127.0.0.1:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	opts = append(opts, grpc.WithPerRPCCredentials(new(ClientTokenAuth)))
+
+	conn, err := grpc.Dial("127.0.0.1:9090", opts...)
 	if err != nil {
 		log.Fatalf("did not connnect: %v", err)
 	}
